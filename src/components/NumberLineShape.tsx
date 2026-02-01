@@ -18,24 +18,16 @@ type NumberLineShapeProps = {
   startValue: number
   endValue: number
   partition: number
-  dots: Array<{ position: number }> // Position stored as value on number line
+  dots: Array<{ numerator: number; denominator: number }> // Position stored as fraction to preserve when partition changes
   showSettings: boolean
 }
 
 // Define the shape type
 export type NumberLineShape = TLBaseShape<'number-line', NumberLineShapeProps>
 
-// Generate fraction label for a dot position (always uses current partition denominator)
-function getFractionLabel(position: number, startValue: number, partition: number): { numerator: number; denominator: number } | null {
-  const offset = position - startValue
-  const numerator = Math.round(offset * partition)
-
-  // Check if it's on an integer (numerator is a multiple of partition)
-  if (numerator % partition === 0) {
-    return null // It's an integer, don't label
-  }
-
-  return { numerator, denominator: partition }
+// Convert dot's stored fraction to a position value on the number line
+function dotToPosition(dot: { numerator: number; denominator: number }, startValue: number): number {
+  return startValue + dot.numerator / dot.denominator
 }
 
 export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
@@ -133,12 +125,10 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
       // Only stop propagation if we're actually handling a dot interaction
       e.stopPropagation()
 
-      // Convert to value
-      const rawValue = startValue + ((clickX - lineStart) / lineLength) * range
-
       // Check if clicking on existing dot (to remove)
       const existingDotIndex = dots.findIndex(dot => {
-        const dotX = lineStart + ((dot.position - startValue) / range) * lineLength
+        const dotPosition = dotToPosition(dot, startValue)
+        const dotX = lineStart + ((dotPosition - startValue) / range) * lineLength
         return Math.abs(dotX - clickX) < 12
       })
 
@@ -155,19 +145,23 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
       }
 
       // Find nearest tick for snapping (always snap to closest tick)
-      let snappedValue = rawValue
+      let snappedTick = ticks[0]
       let minDistance = Infinity
       for (const tick of ticks) {
         const tickX = tick.x
         const distance = Math.abs(tickX - clickX)
         if (distance < minDistance) {
           minDistance = distance
-          snappedValue = tick.value
+          snappedTick = tick
         }
       }
 
-      // Add new dot
-      const newDots = [...dots, { position: snappedValue }]
+      // Calculate the numerator for this tick position
+      // The tick's value is startValue + i/partition, so numerator = (value - startValue) * partition
+      const numerator = Math.round((snappedTick.value - startValue) * partition)
+
+      // Add new dot with fraction representation
+      const newDots = [...dots, { numerator, denominator: partition }]
       this.editor.updateShape<NumberLineShape>({
         id: shape.id,
         type: 'number-line',
@@ -304,8 +298,8 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
 
                 {/* Dots */}
                 {dots.map((dot, index) => {
-                  const dotX = lineStart + ((dot.position - startValue) / range) * lineLength
-                  const fraction = getFractionLabel(dot.position, startValue, partition)
+                  const dotPosition = dotToPosition(dot, startValue)
+                  const dotX = lineStart + ((dotPosition - startValue) / range) * lineLength
 
                   return (
                     <g key={index}>
@@ -317,43 +311,42 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                         stroke="white"
                         strokeWidth={2}
                       />
-                      {fraction && (
-                        <g>
-                          {/* Stacked fraction: numerator */}
-                          <text
-                            x={dotX}
-                            y={lineY - 32}
-                            textAnchor="middle"
-                            fontSize={11}
-                            fontFamily="system-ui, sans-serif"
-                            fontWeight="600"
-                            fill={DOT_COLOR}
-                          >
-                            {fraction.numerator}
-                          </text>
-                          {/* Fraction line */}
-                          <line
-                            x1={dotX - 6}
-                            y1={lineY - 26}
-                            x2={dotX + 6}
-                            y2={lineY - 26}
-                            stroke={DOT_COLOR}
-                            strokeWidth={1.5}
-                          />
-                          {/* Stacked fraction: denominator */}
-                          <text
-                            x={dotX}
-                            y={lineY - 14}
-                            textAnchor="middle"
-                            fontSize={11}
-                            fontFamily="system-ui, sans-serif"
-                            fontWeight="600"
-                            fill={DOT_COLOR}
-                          >
-                            {fraction.denominator}
-                          </text>
-                        </g>
-                      )}
+                      {/* Always show fraction label (including for integers like 3/3) */}
+                      <g>
+                        {/* Stacked fraction: numerator */}
+                        <text
+                          x={dotX}
+                          y={lineY - 32}
+                          textAnchor="middle"
+                          fontSize={11}
+                          fontFamily="system-ui, sans-serif"
+                          fontWeight="600"
+                          fill={DOT_COLOR}
+                        >
+                          {dot.numerator}
+                        </text>
+                        {/* Fraction line */}
+                        <line
+                          x1={dotX - 6}
+                          y1={lineY - 26}
+                          x2={dotX + 6}
+                          y2={lineY - 26}
+                          stroke={DOT_COLOR}
+                          strokeWidth={1.5}
+                        />
+                        {/* Stacked fraction: denominator */}
+                        <text
+                          x={dotX}
+                          y={lineY - 14}
+                          textAnchor="middle"
+                          fontSize={11}
+                          fontFamily="system-ui, sans-serif"
+                          fontWeight="600"
+                          fill={DOT_COLOR}
+                        >
+                          {dot.denominator}
+                        </text>
+                      </g>
                     </g>
                   )
                 })}
