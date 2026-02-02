@@ -143,10 +143,11 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
 
       if (!isValidRange) return
 
-      // Get click position relative to shape
+      // Get click position relative to shape, accounting for zoom
+      const zoom = this.editor.getZoomLevel()
       const rect = e.currentTarget.getBoundingClientRect()
-      const clickX = e.clientX - rect.left
-      const clickY = e.clientY - rect.top
+      const clickX = (e.clientX - rect.left) / zoom
+      const clickY = (e.clientY - rect.top) / zoom
 
       // Check if clicking on a fraction label above a dot (to toggle mixed number)
       const fractionLabelIndex = dots.findIndex(dot => {
