@@ -284,15 +284,21 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                   stroke="#333"
                   strokeWidth={2}
                 />
-                {/* Left arrow (solid, slightly rounded) */}
-                <path
-                  d={`M ${lineStart - 10 - 6},${lineY} Q ${lineStart - 10 - 1},${lineY - 1} ${lineStart - 10},${lineY - 3} L ${lineStart - 10},${lineY + 3} Q ${lineStart - 10 - 1},${lineY + 1} ${lineStart - 10 - 6},${lineY}`}
+                {/* Left arrow (solid, rounded corners) */}
+                <polygon
+                  points={`${lineStart - 16},${lineY} ${lineStart - 10},${lineY - 3.5} ${lineStart - 10},${lineY + 3.5}`}
                   fill="#333"
+                  strokeLinejoin="round"
+                  stroke="#333"
+                  strokeWidth={2}
                 />
-                {/* Right arrow (solid, slightly rounded) */}
-                <path
-                  d={`M ${lineEnd + 10 + 6},${lineY} Q ${lineEnd + 10 + 1},${lineY - 1} ${lineEnd + 10},${lineY - 3} L ${lineEnd + 10},${lineY + 3} Q ${lineEnd + 10 + 1},${lineY + 1} ${lineEnd + 10 + 6},${lineY}`}
+                {/* Right arrow (solid, rounded corners) */}
+                <polygon
+                  points={`${lineEnd + 16},${lineY} ${lineEnd + 10},${lineY - 3.5} ${lineEnd + 10},${lineY + 3.5}`}
                   fill="#333"
+                  strokeLinejoin="round"
+                  stroke="#333"
+                  strokeWidth={2}
                 />
 
                 {/* Tick marks and labels */}
@@ -386,10 +392,10 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                         <g>
                           {/* Whole number */}
                           <text
-                            x={dotX - 4}
+                            x={dotX - 5}
                             y={lineY - 20}
                             textAnchor="middle"
-                            fontSize={13}
+                            fontSize={15}
                             fontFamily="system-ui, sans-serif"
                             fontWeight="600"
                             fill={DOT_COLOR}
