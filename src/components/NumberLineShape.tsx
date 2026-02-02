@@ -30,14 +30,34 @@ function dotToPosition(dot: { numerator: number; denominator: number }, startVal
   return startValue + dot.numerator / dot.denominator
 }
 
-// Convert improper fraction to mixed number
+// Helper to compute GCD for fraction simplification
+function gcd(a: number, b: number): number {
+  a = Math.abs(Math.round(a))
+  b = Math.abs(Math.round(b))
+  while (b) {
+    const t = b
+    b = a % b
+    a = t
+  }
+  return a
+}
+
+// Simplify a fraction
+function simplifyFraction(numerator: number, denominator: number): { numerator: number; denominator: number } {
+  const divisor = gcd(numerator, denominator)
+  return { numerator: numerator / divisor, denominator: denominator / divisor }
+}
+
+// Convert improper fraction to mixed number (with simplified fraction part)
 function toMixedNumber(numerator: number, denominator: number): { whole: number; numerator: number; denominator: number } | null {
   if (numerator < denominator) {
     return null // Not an improper fraction
   }
   const whole = Math.floor(numerator / denominator)
   const remainder = numerator % denominator
-  return { whole, numerator: remainder, denominator }
+  // Simplify the fractional part
+  const simplified = simplifyFraction(remainder, denominator)
+  return { whole, numerator: simplified.numerator, denominator: simplified.denominator }
 }
 
 export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
@@ -254,32 +274,24 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
             {/* Main horizontal line with arrows */}
             {isValidRange && (
               <>
-                {/* Left arrow */}
-                <polyline
-                  points={`${lineStart - 3},${lineY - 4} ${lineStart - 8},${lineY} ${lineStart - 3},${lineY + 4}`}
-                  fill="none"
-                  stroke="#333"
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                {/* Right arrow */}
-                <polyline
-                  points={`${lineEnd + 3},${lineY - 4} ${lineEnd + 8},${lineY} ${lineEnd + 3},${lineY + 4}`}
-                  fill="none"
-                  stroke="#333"
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                {/* Main line (extended slightly to meet arrows) */}
+                {/* Main line (extended to meet arrows) */}
                 <line
-                  x1={lineStart - 8}
+                  x1={lineStart - 18}
                   y1={lineY}
-                  x2={lineEnd + 8}
+                  x2={lineEnd + 18}
                   y2={lineY}
                   stroke="#333"
                   strokeWidth={2}
+                />
+                {/* Left arrow (solid, small) */}
+                <polygon
+                  points={`${lineStart - 18},${lineY} ${lineStart - 14},${lineY - 3} ${lineStart - 14},${lineY + 3}`}
+                  fill="#333"
+                />
+                {/* Right arrow (solid, small) */}
+                <polygon
+                  points={`${lineEnd + 18},${lineY} ${lineEnd + 14},${lineY - 3} ${lineEnd + 14},${lineY + 3}`}
+                  fill="#333"
                 />
 
                 {/* Tick marks and labels */}
@@ -369,14 +381,14 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                       />
                       {/* Fraction label - clickable to toggle mixed number */}
                       {mixed && mixed.numerator > 0 ? (
-                        // Mixed number with fraction part (e.g., 1 2/3)
+                        // Mixed number with fraction part (e.g., 1 1/2)
                         <g>
                           {/* Whole number */}
                           <text
-                            x={dotX - 10}
+                            x={dotX - 6}
                             y={lineY - 20}
                             textAnchor="middle"
-                            fontSize={13}
+                            fontSize={12}
                             fontFamily="system-ui, sans-serif"
                             fontWeight="600"
                             fill={DOT_COLOR}
@@ -385,10 +397,10 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                           </text>
                           {/* Stacked fraction: numerator */}
                           <text
-                            x={dotX + 6}
-                            y={lineY - 32}
+                            x={dotX + 5}
+                            y={lineY - 30}
                             textAnchor="middle"
-                            fontSize={10}
+                            fontSize={9}
                             fontFamily="system-ui, sans-serif"
                             fontWeight="600"
                             fill={DOT_COLOR}
@@ -398,18 +410,18 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                           {/* Fraction line */}
                           <line
                             x1={dotX + 1}
-                            y1={lineY - 26}
-                            x2={dotX + 11}
-                            y2={lineY - 26}
+                            y1={lineY - 25}
+                            x2={dotX + 9}
+                            y2={lineY - 25}
                             stroke={DOT_COLOR}
                             strokeWidth={1.5}
                           />
                           {/* Stacked fraction: denominator */}
                           <text
-                            x={dotX + 6}
-                            y={lineY - 14}
+                            x={dotX + 5}
+                            y={lineY - 15}
                             textAnchor="middle"
-                            fontSize={10}
+                            fontSize={9}
                             fontFamily="system-ui, sans-serif"
                             fontWeight="600"
                             fill={DOT_COLOR}
