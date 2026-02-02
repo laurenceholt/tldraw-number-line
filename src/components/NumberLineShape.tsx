@@ -284,14 +284,14 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                   stroke="#333"
                   strokeWidth={2}
                 />
-                {/* Left arrow (solid, wider than tall) */}
-                <polygon
-                  points={`${lineStart - 10 - 6},${lineY} ${lineStart - 10},${lineY - 3} ${lineStart - 10},${lineY + 3}`}
+                {/* Left arrow (solid, slightly rounded) */}
+                <path
+                  d={`M ${lineStart - 10 - 6},${lineY} Q ${lineStart - 10 - 1},${lineY - 1} ${lineStart - 10},${lineY - 3} L ${lineStart - 10},${lineY + 3} Q ${lineStart - 10 - 1},${lineY + 1} ${lineStart - 10 - 6},${lineY}`}
                   fill="#333"
                 />
-                {/* Right arrow (solid, wider than tall) */}
-                <polygon
-                  points={`${lineEnd + 10 + 6},${lineY} ${lineEnd + 10},${lineY - 3} ${lineEnd + 10},${lineY + 3}`}
+                {/* Right arrow (solid, slightly rounded) */}
+                <path
+                  d={`M ${lineEnd + 10 + 6},${lineY} Q ${lineEnd + 10 + 1},${lineY - 1} ${lineEnd + 10},${lineY - 3} L ${lineEnd + 10},${lineY + 3} Q ${lineEnd + 10 + 1},${lineY + 1} ${lineEnd + 10 + 6},${lineY}`}
                   fill="#333"
                 />
 
@@ -386,10 +386,10 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                         <g>
                           {/* Whole number */}
                           <text
-                            x={dotX - 6}
+                            x={dotX - 4}
                             y={lineY - 20}
                             textAnchor="middle"
-                            fontSize={12}
+                            fontSize={13}
                             fontFamily="system-ui, sans-serif"
                             fontWeight="600"
                             fill={DOT_COLOR}
