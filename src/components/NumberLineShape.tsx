@@ -18,7 +18,7 @@ type NumberLineShapeProps = {
   startValue: number
   endValue: number
   partition: number
-  dots: Array<{ numerator: number; denominator: number }> // Position stored as fraction to preserve when partition changes
+  dots: Array<{ numerator: number; denominator: number; showMixed?: boolean }> // Position stored as fraction to preserve when partition changes
   showSettings: boolean
 }
 
@@ -28,6 +28,16 @@ export type NumberLineShape = TLBaseShape<'number-line', NumberLineShapeProps>
 // Convert dot's stored fraction to a position value on the number line
 function dotToPosition(dot: { numerator: number; denominator: number }, startValue: number): number {
   return startValue + dot.numerator / dot.denominator
+}
+
+// Convert improper fraction to mixed number
+function toMixedNumber(numerator: number, denominator: number): { whole: number; numerator: number; denominator: number } | null {
+  if (numerator < denominator) {
+    return null // Not an improper fraction
+  }
+  const whole = Math.floor(numerator / denominator)
+  const remainder = numerator % denominator
+  return { whole, numerator: remainder, denominator }
 }
 
 export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
@@ -117,6 +127,32 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
       const rect = e.currentTarget.getBoundingClientRect()
       const clickX = e.clientX - rect.left
       const clickY = e.clientY - rect.top
+
+      // Check if clicking on a fraction label above a dot (to toggle mixed number)
+      const fractionLabelIndex = dots.findIndex(dot => {
+        const dotPosition = dotToPosition(dot, startValue)
+        const dotX = lineStart + ((dotPosition - startValue) / range) * lineLength
+        // Check if click is in the fraction label area (above the dot)
+        const inXRange = Math.abs(dotX - clickX) < 20
+        const inYRange = clickY >= lineY - 50 && clickY <= lineY - 10
+        return inXRange && inYRange
+      })
+
+      if (fractionLabelIndex !== -1) {
+        // Toggle mixed number display for this dot
+        e.stopPropagation()
+        const newDots = [...dots]
+        newDots[fractionLabelIndex] = {
+          ...newDots[fractionLabelIndex],
+          showMixed: !newDots[fractionLabelIndex].showMixed
+        }
+        this.editor.updateShape<NumberLineShape>({
+          id: shape.id,
+          type: 'number-line',
+          props: { dots: newDots },
+        })
+        return
+      }
 
       // Check if click is in the number line area (with some tolerance)
       if (clickY < lineY - 25 || clickY > lineY + 25) return
@@ -215,13 +251,32 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
               strokeWidth={1}
             />
 
-            {/* Main horizontal line */}
+            {/* Main horizontal line with arrows */}
             {isValidRange && (
               <>
+                {/* Left arrow */}
+                <polyline
+                  points={`${lineStart - 3},${lineY - 4} ${lineStart - 8},${lineY} ${lineStart - 3},${lineY + 4}`}
+                  fill="none"
+                  stroke="#333"
+                  strokeWidth={1.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Right arrow */}
+                <polyline
+                  points={`${lineEnd + 3},${lineY - 4} ${lineEnd + 8},${lineY} ${lineEnd + 3},${lineY + 4}`}
+                  fill="none"
+                  stroke="#333"
+                  strokeWidth={1.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Main line (extended slightly to meet arrows) */}
                 <line
-                  x1={lineStart}
+                  x1={lineStart - 8}
                   y1={lineY}
-                  x2={lineEnd}
+                  x2={lineEnd + 8}
                   y2={lineY}
                   stroke="#333"
                   strokeWidth={2}
@@ -300,9 +355,10 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                 {dots.map((dot, index) => {
                   const dotPosition = dotToPosition(dot, startValue)
                   const dotX = lineStart + ((dotPosition - startValue) / range) * lineLength
+                  const mixed = dot.showMixed ? toMixedNumber(dot.numerator, dot.denominator) : null
 
                   return (
-                    <g key={index}>
+                    <g key={index} style={{ cursor: 'pointer' }}>
                       <circle
                         cx={dotX}
                         cy={lineY}
@@ -311,42 +367,107 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                         stroke="white"
                         strokeWidth={2}
                       />
-                      {/* Always show fraction label (including for integers like 3/3) */}
-                      <g>
-                        {/* Stacked fraction: numerator */}
+                      {/* Fraction label - clickable to toggle mixed number */}
+                      {mixed && mixed.numerator > 0 ? (
+                        // Mixed number with fraction part (e.g., 1 2/3)
+                        <g>
+                          {/* Whole number */}
+                          <text
+                            x={dotX - 10}
+                            y={lineY - 20}
+                            textAnchor="middle"
+                            fontSize={13}
+                            fontFamily="system-ui, sans-serif"
+                            fontWeight="600"
+                            fill={DOT_COLOR}
+                          >
+                            {mixed.whole}
+                          </text>
+                          {/* Stacked fraction: numerator */}
+                          <text
+                            x={dotX + 6}
+                            y={lineY - 32}
+                            textAnchor="middle"
+                            fontSize={10}
+                            fontFamily="system-ui, sans-serif"
+                            fontWeight="600"
+                            fill={DOT_COLOR}
+                          >
+                            {mixed.numerator}
+                          </text>
+                          {/* Fraction line */}
+                          <line
+                            x1={dotX + 1}
+                            y1={lineY - 26}
+                            x2={dotX + 11}
+                            y2={lineY - 26}
+                            stroke={DOT_COLOR}
+                            strokeWidth={1.5}
+                          />
+                          {/* Stacked fraction: denominator */}
+                          <text
+                            x={dotX + 6}
+                            y={lineY - 14}
+                            textAnchor="middle"
+                            fontSize={10}
+                            fontFamily="system-ui, sans-serif"
+                            fontWeight="600"
+                            fill={DOT_COLOR}
+                          >
+                            {mixed.denominator}
+                          </text>
+                        </g>
+                      ) : mixed && mixed.numerator === 0 ? (
+                        // Whole number only (e.g., 3/3 = 1)
                         <text
                           x={dotX}
-                          y={lineY - 32}
+                          y={lineY - 18}
                           textAnchor="middle"
-                          fontSize={11}
+                          fontSize={13}
                           fontFamily="system-ui, sans-serif"
                           fontWeight="600"
                           fill={DOT_COLOR}
                         >
-                          {dot.numerator}
+                          {mixed.whole}
                         </text>
-                        {/* Fraction line */}
-                        <line
-                          x1={dotX - 6}
-                          y1={lineY - 26}
-                          x2={dotX + 6}
-                          y2={lineY - 26}
-                          stroke={DOT_COLOR}
-                          strokeWidth={1.5}
-                        />
-                        {/* Stacked fraction: denominator */}
-                        <text
-                          x={dotX}
-                          y={lineY - 14}
-                          textAnchor="middle"
-                          fontSize={11}
-                          fontFamily="system-ui, sans-serif"
-                          fontWeight="600"
-                          fill={DOT_COLOR}
-                        >
-                          {dot.denominator}
-                        </text>
-                      </g>
+                      ) : (
+                        // Improper fraction (default)
+                        <g>
+                          {/* Stacked fraction: numerator */}
+                          <text
+                            x={dotX}
+                            y={lineY - 32}
+                            textAnchor="middle"
+                            fontSize={11}
+                            fontFamily="system-ui, sans-serif"
+                            fontWeight="600"
+                            fill={DOT_COLOR}
+                          >
+                            {dot.numerator}
+                          </text>
+                          {/* Fraction line */}
+                          <line
+                            x1={dotX - 6}
+                            y1={lineY - 26}
+                            x2={dotX + 6}
+                            y2={lineY - 26}
+                            stroke={DOT_COLOR}
+                            strokeWidth={1.5}
+                          />
+                          {/* Stacked fraction: denominator */}
+                          <text
+                            x={dotX}
+                            y={lineY - 14}
+                            textAnchor="middle"
+                            fontSize={11}
+                            fontFamily="system-ui, sans-serif"
+                            fontWeight="600"
+                            fill={DOT_COLOR}
+                          >
+                            {dot.denominator}
+                          </text>
+                        </g>
+                      )}
                     </g>
                   )
                 })}
