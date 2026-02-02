@@ -275,23 +275,23 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
             {/* Main horizontal line with arrows */}
             {isValidRange && (
               <>
-                {/* Main line (extended to meet arrows) */}
+                {/* Main line (extended to arrows) */}
                 <line
-                  x1={lineStart - 18}
+                  x1={lineStart - 10}
                   y1={lineY}
-                  x2={lineEnd + 18}
+                  x2={lineEnd + 10}
                   y2={lineY}
                   stroke="#333"
                   strokeWidth={2}
                 />
-                {/* Left arrow (solid, small) */}
+                {/* Left arrow (solid, wider than tall) */}
                 <polygon
-                  points={`${lineStart - 18},${lineY} ${lineStart - 14},${lineY - 3} ${lineStart - 14},${lineY + 3}`}
+                  points={`${lineStart - 10 - 6},${lineY} ${lineStart - 10},${lineY - 3} ${lineStart - 10},${lineY + 3}`}
                   fill="#333"
                 />
-                {/* Right arrow (solid, small) */}
+                {/* Right arrow (solid, wider than tall) */}
                 <polygon
-                  points={`${lineEnd + 18},${lineY} ${lineEnd + 14},${lineY - 3} ${lineEnd + 14},${lineY + 3}`}
+                  points={`${lineEnd + 10 + 6},${lineY} ${lineEnd + 10},${lineY - 3} ${lineEnd + 10},${lineY + 3}`}
                   fill="#333"
                 />
 
@@ -449,9 +449,9 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                           {/* Stacked fraction: numerator */}
                           <text
                             x={dotX}
-                            y={lineY - 32}
+                            y={lineY - 30}
                             textAnchor="middle"
-                            fontSize={11}
+                            fontSize={9}
                             fontFamily="system-ui, sans-serif"
                             fontWeight="600"
                             fill={DOT_COLOR}
@@ -460,19 +460,19 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
                           </text>
                           {/* Fraction line */}
                           <line
-                            x1={dotX - 6}
-                            y1={lineY - 26}
-                            x2={dotX + 6}
-                            y2={lineY - 26}
+                            x1={dotX - 5}
+                            y1={lineY - 25}
+                            x2={dotX + 5}
+                            y2={lineY - 25}
                             stroke={DOT_COLOR}
                             strokeWidth={1.5}
                           />
                           {/* Stacked fraction: denominator */}
                           <text
                             x={dotX}
-                            y={lineY - 14}
+                            y={lineY - 15}
                             textAnchor="middle"
-                            fontSize={11}
+                            fontSize={9}
                             fontFamily="system-ui, sans-serif"
                             fontWeight="600"
                             fill={DOT_COLOR}
