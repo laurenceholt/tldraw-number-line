@@ -3,11 +3,13 @@ import 'tldraw/tldraw.css'
 import { NumberLineShapeUtil, NumberLineShape } from './components/NumberLineShape'
 import { NumberLinePanel } from './components/NumberLinePanel'
 import { NumberLineTool } from './components/NumberLineTool'
+import { FractionShapeUtil } from './components/FractionShape'
+import { FractionTool } from './components/FractionTool'
 
-const customShapeUtils = [NumberLineShapeUtil]
-const customTools = [NumberLineTool]
+const customShapeUtils = [NumberLineShapeUtil, FractionShapeUtil]
+const customTools = [NumberLineTool, FractionTool]
 
-// UI overrides to add our tool to the tools list
+// UI overrides to add our tools to the tools list
 const uiOverrides: TLUiOverrides = {
   tools(editor, tools) {
     tools['number-line'] = {
@@ -19,11 +21,20 @@ const uiOverrides: TLUiOverrides = {
         editor.setCurrentTool('number-line')
       },
     }
+    tools['fraction'] = {
+      id: 'fraction',
+      icon: 'tool-fraction',
+      label: 'Fraction',
+      kbd: 'f',
+      onSelect: () => {
+        editor.setCurrentTool('fraction')
+      },
+    }
     return tools
   },
 }
 
-// Custom toolbar item with inline SVG icon
+// Custom toolbar item with inline SVG icon for Number Line
 const NumberLineToolbarItem = track(function NumberLineToolbarItem() {
   const editor = useEditor()
   const isSelected = editor.getCurrentToolId() === 'number-line'
@@ -49,13 +60,40 @@ const NumberLineToolbarItem = track(function NumberLineToolbarItem() {
   )
 })
 
-// Custom toolbar that includes our number line tool
+// Custom toolbar item for Fraction tool
+const FractionToolbarItem = track(function FractionToolbarItem() {
+  const editor = useEditor()
+  const isSelected = editor.getCurrentToolId() === 'fraction'
+
+  return (
+    <button
+      className="tlui-button tlui-button__tool"
+      data-state={isSelected ? 'selected' : undefined}
+      data-tool="fraction"
+      aria-label="Fraction"
+      title="Fraction (F)"
+      onClick={() => editor.setCurrentTool('fraction')}
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
+        {/* Top box (numerator) */}
+        <rect x="5" y="2" width="8" height="5" rx="1" />
+        {/* Fraction line */}
+        <line x1="4" y1="9" x2="14" y2="9" strokeLinecap="round" />
+        {/* Bottom box (denominator) */}
+        <rect x="5" y="11" width="8" height="5" rx="1" />
+      </svg>
+    </button>
+  )
+})
+
+// Custom toolbar that includes our custom tools
 const components: TLUiComponents = {
   Toolbar: (props) => {
     return (
       <DefaultToolbar {...props}>
         <DefaultToolbarContent />
         <NumberLineToolbarItem />
+        <FractionToolbarItem />
       </DefaultToolbar>
     )
   },
