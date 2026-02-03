@@ -79,14 +79,20 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
     }, [shape.id])
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter' || e.key === 'Tab') {
+      if (e.key === 'Enter') {
         e.preventDefault()
+        // Exit edit mode
+        this.editor.setEditingShape(null)
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault()
+        // Toggle between numerator and denominator
         if (e.currentTarget === numeratorRef.current) {
           denominatorRef.current?.focus()
           denominatorRef.current?.select()
         } else {
-          // Exit edit mode
-          this.editor.setEditingShape(null)
+          numeratorRef.current?.focus()
+          numeratorRef.current?.select()
         }
       }
       if (e.key === 'Escape') {
@@ -98,8 +104,12 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
 
     // Calculate sizes based on shape dimensions
     const fontSize = Math.min(w, h) * 0.35
-    const boxSize = Math.min(w * 0.7, h * 0.35)
-    const lineWidth = Math.min(w * 0.8, 50)
+    const boxSize = Math.min(w * 0.7, h * 0.3)
+    const lineWidth = Math.min(w * 0.35, 25)
+
+    // Calculate dynamic width based on content length
+    const maxContentLength = Math.max(numerator.length, denominator.length, 1)
+    const dynamicBoxWidth = Math.max(boxSize, maxContentLength * fontSize * 0.6)
 
     return (
       <HTMLContainer id={shape.id}>
@@ -129,9 +139,9 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                 value={numerator}
                 onChange={handleNumeratorChange}
                 onKeyDown={handleKeyDown}
-                placeholder="?"
+                placeholder=""
                 style={{
-                  width: boxSize,
+                  width: dynamicBoxWidth,
                   height: boxSize,
                   textAlign: 'center',
                   fontSize: fontSize * 0.8,
@@ -140,13 +150,14 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                   border: '2px solid #333',
                   borderRadius: 4,
                   outline: 'none',
-                  padding: 0,
+                  padding: '0 4px',
                   background: 'white',
+                  minWidth: boxSize,
                 }}
               />
               <div
                 style={{
-                  width: lineWidth,
+                  width: Math.max(lineWidth, dynamicBoxWidth),
                   height: 2,
                   backgroundColor: '#333',
                   borderRadius: 1,
@@ -158,9 +169,9 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                 value={denominator}
                 onChange={handleDenominatorChange}
                 onKeyDown={handleKeyDown}
-                placeholder="?"
+                placeholder=""
                 style={{
-                  width: boxSize,
+                  width: dynamicBoxWidth,
                   height: boxSize,
                   textAlign: 'center',
                   fontSize: fontSize * 0.8,
@@ -169,8 +180,9 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                   border: '2px solid #333',
                   borderRadius: 4,
                   outline: 'none',
-                  padding: 0,
+                  padding: '0 4px',
                   background: 'white',
+                  minWidth: boxSize,
                 }}
               />
             </>
@@ -186,14 +198,14 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                       height: boxSize,
                       border: '2px solid #999',
                       borderRadius: 4,
-                      background: 'white',
+                      background: '#e0e0e0',
                     }}
                   />
                   <div
                     style={{
                       width: lineWidth,
                       height: 2,
-                      backgroundColor: '#333',
+                      backgroundColor: '#999',
                       borderRadius: 1,
                     }}
                   />
@@ -203,7 +215,7 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                       height: boxSize,
                       border: '2px solid #999',
                       borderRadius: 4,
-                      background: 'white',
+                      background: '#e0e0e0',
                     }}
                   />
                 </>
@@ -217,7 +229,7 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                   {/* Numerator */}
                   <text
                     x={w / 2}
-                    y={h * 0.35}
+                    y={h * 0.22}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fontSize={fontSize}
@@ -225,13 +237,13 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                     fontWeight="600"
                     fill="#333"
                   >
-                    {numerator || '?'}
+                    {numerator}
                   </text>
                   {/* Fraction line */}
                   <line
-                    x1={(w - lineWidth) / 2}
+                    x1={(w - Math.max(lineWidth, dynamicBoxWidth)) / 2}
                     y1={h / 2}
-                    x2={(w + lineWidth) / 2}
+                    x2={(w + Math.max(lineWidth, dynamicBoxWidth)) / 2}
                     y2={h / 2}
                     stroke="#333"
                     strokeWidth={2}
@@ -240,7 +252,7 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                   {/* Denominator */}
                   <text
                     x={w / 2}
-                    y={h * 0.65}
+                    y={h * 0.78}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fontSize={fontSize}
@@ -248,7 +260,7 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                     fontWeight="600"
                     fill="#333"
                   >
-                    {denominator || '?'}
+                    {denominator}
                   </text>
                 </svg>
               )}

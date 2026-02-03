@@ -74,13 +74,13 @@ const FractionToolbarItem = track(function FractionToolbarItem() {
       title="Fraction (F)"
       onClick={() => editor.setCurrentTool('fraction')}
     >
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#999" strokeWidth="1.5">
         {/* Top box (numerator) */}
-        <rect x="5" y="2" width="8" height="5" rx="1" />
+        <rect x="5" y="1" width="8" height="5" rx="1" fill="#e0e0e0" />
         {/* Fraction line */}
-        <line x1="4" y1="9" x2="14" y2="9" strokeLinecap="round" />
+        <line x1="6" y1="9" x2="12" y2="9" strokeLinecap="round" />
         {/* Bottom box (denominator) */}
-        <rect x="5" y="11" width="8" height="5" rx="1" />
+        <rect x="5" y="12" width="8" height="5" rx="1" fill="#e0e0e0" />
       </svg>
     </button>
   )
