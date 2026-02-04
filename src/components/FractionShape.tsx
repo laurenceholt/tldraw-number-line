@@ -62,21 +62,40 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
       }
     }, [isEditing])
 
+    // Auto-resize shape if content is wider than bounding box
+    const autoResizeIfNeeded = useCallback((newNumerator: string, newDenominator: string) => {
+      const maxLen = Math.max(newNumerator.length, newDenominator.length, 1)
+      const currentFontSize = Math.min(w, h) * 0.35
+      const neededWidth = Math.max(60, maxLen * currentFontSize * 0.7 + 20)
+
+      if (neededWidth > w) {
+        this.editor.updateShape<FractionShape>({
+          id: shape.id,
+          type: 'fraction',
+          props: { w: neededWidth },
+        })
+      }
+    }, [shape.id, w, h])
+
     const handleNumeratorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value
       this.editor.updateShape<FractionShape>({
         id: shape.id,
         type: 'fraction',
-        props: { numerator: e.target.value },
+        props: { numerator: newValue },
       })
-    }, [shape.id])
+      autoResizeIfNeeded(newValue, denominator)
+    }, [shape.id, denominator, autoResizeIfNeeded])
 
     const handleDenominatorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value
       this.editor.updateShape<FractionShape>({
         id: shape.id,
         type: 'fraction',
-        props: { denominator: e.target.value },
+        props: { denominator: newValue },
       })
-    }, [shape.id])
+      autoResizeIfNeeded(numerator, newValue)
+    }, [shape.id, numerator, autoResizeIfNeeded])
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
@@ -104,12 +123,12 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
 
     // Calculate sizes based on shape dimensions
     const fontSize = Math.min(w, h) * 0.35
-    const boxSize = Math.min(w * 0.7, h * 0.3)
+    const boxHeight = Math.min(w * 0.7, h * 0.38)
     const lineWidth = Math.min(w * 0.35, 25)
 
     // Calculate dynamic width based on content length
     const maxContentLength = Math.max(numerator.length, denominator.length, 1)
-    const dynamicBoxWidth = Math.max(boxSize, maxContentLength * fontSize * 0.6)
+    const dynamicBoxWidth = Math.max(boxHeight, maxContentLength * fontSize * 0.6)
 
     return (
       <HTMLContainer id={shape.id}>
@@ -142,17 +161,17 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                 placeholder=""
                 style={{
                   width: dynamicBoxWidth,
-                  height: boxSize,
+                  height: boxHeight,
                   textAlign: 'center',
                   fontSize: fontSize * 0.8,
                   fontFamily: 'system-ui, sans-serif',
                   fontWeight: 600,
-                  border: '2px solid #333',
+                  border: '2px solid #999',
                   borderRadius: 4,
                   outline: 'none',
                   padding: '0 4px',
                   background: 'white',
-                  minWidth: boxSize,
+                  minWidth: boxHeight,
                 }}
               />
               <div
@@ -172,17 +191,17 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                 placeholder=""
                 style={{
                   width: dynamicBoxWidth,
-                  height: boxSize,
+                  height: boxHeight,
                   textAlign: 'center',
                   fontSize: fontSize * 0.8,
                   fontFamily: 'system-ui, sans-serif',
                   fontWeight: 600,
-                  border: '2px solid #333',
+                  border: '2px solid #999',
                   borderRadius: 4,
                   outline: 'none',
                   padding: '0 4px',
                   background: 'white',
-                  minWidth: boxSize,
+                  minWidth: boxHeight,
                 }}
               />
             </>
@@ -194,8 +213,8 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                 <>
                   <div
                     style={{
-                      width: boxSize,
-                      height: boxSize,
+                      width: boxHeight,
+                      height: boxHeight,
                       border: '2px solid #999',
                       borderRadius: 4,
                       background: '#e0e0e0',
@@ -211,8 +230,8 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                   />
                   <div
                     style={{
-                      width: boxSize,
-                      height: boxSize,
+                      width: boxHeight,
+                      height: boxHeight,
                       border: '2px solid #999',
                       borderRadius: 4,
                       background: '#e0e0e0',
