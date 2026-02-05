@@ -5,9 +5,11 @@ import { NumberLinePanel } from './components/NumberLinePanel'
 import { NumberLineTool } from './components/NumberLineTool'
 import { FractionShapeUtil } from './components/FractionShape'
 import { FractionTool } from './components/FractionTool'
+import { MixedNumberShapeUtil } from './components/MixedNumberShape'
+import { MixedNumberTool } from './components/MixedNumberTool'
 
-const customShapeUtils = [NumberLineShapeUtil, FractionShapeUtil]
-const customTools = [NumberLineTool, FractionTool]
+const customShapeUtils = [NumberLineShapeUtil, FractionShapeUtil, MixedNumberShapeUtil]
+const customTools = [NumberLineTool, FractionTool, MixedNumberTool]
 
 // UI overrides to add our tools to the tools list
 const uiOverrides: TLUiOverrides = {
@@ -28,6 +30,15 @@ const uiOverrides: TLUiOverrides = {
       kbd: 'f',
       onSelect: () => {
         editor.setCurrentTool('fraction')
+      },
+    }
+    tools['mixed-number'] = {
+      id: 'mixed-number',
+      icon: 'tool-mixed-number',
+      label: 'Mixed Number',
+      kbd: 'm',
+      onSelect: () => {
+        editor.setCurrentTool('mixed-number')
       },
     }
     return tools
@@ -86,6 +97,34 @@ const FractionToolbarItem = track(function FractionToolbarItem() {
   )
 })
 
+// Custom toolbar item for Mixed Number tool
+const MixedNumberToolbarItem = track(function MixedNumberToolbarItem() {
+  const editor = useEditor()
+  const isSelected = editor.getCurrentToolId() === 'mixed-number'
+
+  return (
+    <button
+      className="tlui-button tlui-button__tool"
+      data-state={isSelected ? 'selected' : undefined}
+      data-tool="mixed-number"
+      aria-label="Mixed Number"
+      title="Mixed Number (M)"
+      onClick={() => editor.setCurrentTool('mixed-number')}
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#999" strokeWidth="1.5">
+        {/* Large left box (whole number) */}
+        <rect x="1" y="4" width="7" height="10" rx="1" fill="#e0e0e0" />
+        {/* Top right box (numerator) */}
+        <rect x="10" y="1" width="6" height="5" rx="1" fill="#e0e0e0" />
+        {/* Fraction line */}
+        <line x1="10" y1="9" x2="16" y2="9" strokeLinecap="round" />
+        {/* Bottom right box (denominator) */}
+        <rect x="10" y="12" width="6" height="5" rx="1" fill="#e0e0e0" />
+      </svg>
+    </button>
+  )
+})
+
 // Custom toolbar that includes our custom tools
 const components: TLUiComponents = {
   Toolbar: (props) => {
@@ -94,6 +133,7 @@ const components: TLUiComponents = {
         <DefaultToolbarContent />
         <NumberLineToolbarItem />
         <FractionToolbarItem />
+        <MixedNumberToolbarItem />
       </DefaultToolbar>
     )
   },
