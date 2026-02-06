@@ -143,8 +143,8 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
     // Calculate sizes based on shape dimensions
     const fontSize = Math.min(w, h) * 0.35
     const boxHeight = Math.min(w * 0.7, h * 0.38)
-    const lineWidth = Math.min(w * 0.35, 25)
-    const gap = 2 // consistent small gap between elements
+    const lineWidth = fontSize * 0.7 // just wider than a single digit
+    const gap = 4 // margin between fraction and suffix
 
     // Calculate dynamic width based on content length
     const maxContentLength = Math.max(numerator.length, denominator.length, 1)
@@ -235,7 +235,7 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                   }}
                 />
               </div>
-              {/* Suffix input */}
+              {/* Suffix input - invisible box, just shows cursor */}
               <input
                 ref={suffixRef}
                 type="text"
@@ -244,18 +244,17 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                 onKeyDown={handleKeyDown}
                 placeholder=""
                 style={{
-                  width: suffixBoxWidth,
+                  width: Math.max(fontSize * 0.5, suffixBoxWidth),
                   height: boxHeight,
-                  textAlign: 'center',
+                  textAlign: 'left',
                   fontSize: fontSize * 0.8,
                   fontFamily: 'system-ui, sans-serif',
                   fontWeight: 600,
-                  border: '2px solid #999',
-                  borderRadius: 4,
+                  border: 'none',
                   outline: 'none',
-                  padding: '0 4px',
-                  background: 'white',
-                  minWidth: boxHeight * 0.6,
+                  padding: 0,
+                  background: 'transparent',
+                  caretColor: '#333',
                 }}
               />
             </>
@@ -263,7 +262,7 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
             // Display mode: show fraction or placeholder boxes
             <>
               {isEmpty ? (
-                // Show placeholder boxes when empty
+                // Show placeholder boxes when empty (no suffix placeholder - it's invisible)
                 <>
                   {/* Fraction placeholder */}
                   <div
@@ -271,7 +270,7 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: gap,
+                      gap: 2,
                     }}
                   >
                     <div
@@ -301,16 +300,6 @@ export class FractionShapeUtil extends ShapeUtil<FractionShape> {
                       }}
                     />
                   </div>
-                  {/* Suffix placeholder */}
-                  <div
-                    style={{
-                      width: boxHeight * 0.6,
-                      height: boxHeight,
-                      border: '2px solid #999',
-                      borderRadius: 4,
-                      background: '#e0e0e0',
-                    }}
-                  />
                 </>
               ) : (
                 // Show the actual fraction with suffix

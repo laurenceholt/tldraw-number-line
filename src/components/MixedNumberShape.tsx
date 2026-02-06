@@ -163,8 +163,8 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
     const wholeFontSize = fontSize * 1.4
     const boxHeight = Math.min(w * 0.4, h * 0.38)
     const wholeBoxSize = Math.min(w * 0.5, h * 0.7)
-    const lineWidth = Math.min(w * 0.25, 25)
-    const gap = 2 // consistent small gap between elements
+    const lineWidth = fontSize * 0.7 // just wider than a single digit
+    const gap = 4 // margin between whole/fraction and fraction/suffix
 
     // Calculate dynamic widths based on content length
     const wholeBoxWidth = Math.max(wholeBoxSize * 0.6, whole.length * wholeFontSize * 0.6)
@@ -279,7 +279,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                   }}
                 />
               </div>
-              {/* Suffix input */}
+              {/* Suffix input - invisible box, just shows cursor */}
               <input
                 ref={suffixRef}
                 type="text"
@@ -288,18 +288,17 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                 onKeyDown={handleKeyDown}
                 placeholder=""
                 style={{
-                  width: suffixBoxWidth,
+                  width: Math.max(fontSize * 0.5, suffixBoxWidth),
                   height: boxHeight,
-                  textAlign: 'center',
+                  textAlign: 'left',
                   fontSize: fontSize * 0.8,
                   fontFamily: 'system-ui, sans-serif',
                   fontWeight: 600,
-                  border: '2px solid #999',
-                  borderRadius: 4,
+                  border: 'none',
                   outline: 'none',
-                  padding: '0 4px',
-                  background: 'white',
-                  minWidth: boxHeight * 0.6,
+                  padding: 0,
+                  background: 'transparent',
+                  caretColor: '#333',
                 }}
               />
             </>
@@ -307,7 +306,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
             // Display mode: show mixed number or placeholder boxes
             <>
               {isEmpty ? (
-                // Show placeholder boxes when empty
+                // Show placeholder boxes when empty (no suffix placeholder - it's invisible)
                 <>
                   {/* Whole number placeholder */}
                   <div
@@ -325,7 +324,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: gap,
+                      gap: 2,
                     }}
                   >
                     <div
@@ -355,16 +354,6 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                       }}
                     />
                   </div>
-                  {/* Suffix placeholder */}
-                  <div
-                    style={{
-                      width: boxHeight * 0.6,
-                      height: boxHeight,
-                      border: '2px solid #999',
-                      borderRadius: 4,
-                      background: '#e0e0e0',
-                    }}
-                  />
                 </>
               ) : (
                 // Show the actual mixed number with suffix
