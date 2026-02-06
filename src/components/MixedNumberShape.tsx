@@ -15,6 +15,7 @@ type MixedNumberShapeProps = {
   whole: string
   numerator: string
   denominator: string
+  suffix: string
 }
 
 // Define the shape type
@@ -30,6 +31,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
       whole: '',
       numerator: '',
       denominator: '',
+      suffix: '',
     }
   }
 
@@ -49,13 +51,14 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
   }
 
   component(shape: MixedNumberShape) {
-    const { w, h, whole, numerator, denominator } = shape.props
+    const { w, h, whole, numerator, denominator, suffix } = shape.props
     const isEditing = this.editor.getEditingShapeId() === shape.id
-    const isEmpty = !whole && !numerator && !denominator
+    const isEmpty = !whole && !numerator && !denominator && !suffix
 
     const wholeRef = useRef<HTMLInputElement>(null)
     const numeratorRef = useRef<HTMLInputElement>(null)
     const denominatorRef = useRef<HTMLInputElement>(null)
+    const suffixRef = useRef<HTMLInputElement>(null)
 
     // Focus whole number input when entering edit mode
     useEffect(() => {
@@ -66,13 +69,15 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
     }, [isEditing])
 
     // Auto-resize shape if content is wider than bounding box
-    const autoResizeIfNeeded = useCallback((newWhole: string, newNumerator: string, newDenominator: string) => {
+    const autoResizeIfNeeded = useCallback((newWhole: string, newNumerator: string, newDenominator: string, newSuffix: string) => {
       const currentFontSize = Math.min(w, h) * 0.35
       const wholeFontSize = currentFontSize * 1.4
-      const wholeWidth = Math.max(30, newWhole.length * wholeFontSize * 0.7 + 10)
+      const wholeWidth = Math.max(20, newWhole.length * wholeFontSize * 0.7 + 5)
       const fractionMaxLen = Math.max(newNumerator.length, newDenominator.length, 1)
-      const fractionWidth = Math.max(30, fractionMaxLen * currentFontSize * 0.7 + 10)
-      const neededWidth = wholeWidth + fractionWidth + 15
+      const fractionWidth = Math.max(20, fractionMaxLen * currentFontSize * 0.7 + 5)
+      const suffixWidth = newSuffix.length * currentFontSize * 0.6
+      const gap = 2
+      const neededWidth = wholeWidth + gap + fractionWidth + (newSuffix ? gap + suffixWidth : 0) + 10
 
       if (neededWidth > w) {
         this.editor.updateShape<MixedNumberShape>({
@@ -90,8 +95,8 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
         type: 'mixed-number',
         props: { whole: newValue },
       })
-      autoResizeIfNeeded(newValue, numerator, denominator)
-    }, [shape.id, numerator, denominator, autoResizeIfNeeded])
+      autoResizeIfNeeded(newValue, numerator, denominator, suffix)
+    }, [shape.id, numerator, denominator, suffix, autoResizeIfNeeded])
 
     const handleNumeratorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value
@@ -100,8 +105,8 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
         type: 'mixed-number',
         props: { numerator: newValue },
       })
-      autoResizeIfNeeded(whole, newValue, denominator)
-    }, [shape.id, whole, denominator, autoResizeIfNeeded])
+      autoResizeIfNeeded(whole, newValue, denominator, suffix)
+    }, [shape.id, whole, denominator, suffix, autoResizeIfNeeded])
 
     const handleDenominatorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value
@@ -110,8 +115,18 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
         type: 'mixed-number',
         props: { denominator: newValue },
       })
-      autoResizeIfNeeded(whole, numerator, newValue)
-    }, [shape.id, whole, numerator, autoResizeIfNeeded])
+      autoResizeIfNeeded(whole, numerator, newValue, suffix)
+    }, [shape.id, whole, numerator, suffix, autoResizeIfNeeded])
+
+    const handleSuffixChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value
+      this.editor.updateShape<MixedNumberShape>({
+        id: shape.id,
+        type: 'mixed-number',
+        props: { suffix: newValue },
+      })
+      autoResizeIfNeeded(whole, numerator, denominator, newValue)
+    }, [shape.id, whole, numerator, denominator, autoResizeIfNeeded])
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
@@ -121,13 +136,16 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
       }
       if (e.key === 'Tab') {
         e.preventDefault()
-        // Cycle through: whole -> numerator -> denominator -> whole
+        // Cycle through: whole -> numerator -> denominator -> suffix -> whole
         if (e.currentTarget === wholeRef.current) {
           numeratorRef.current?.focus()
           numeratorRef.current?.select()
         } else if (e.currentTarget === numeratorRef.current) {
           denominatorRef.current?.focus()
           denominatorRef.current?.select()
+        } else if (e.currentTarget === denominatorRef.current) {
+          suffixRef.current?.focus()
+          suffixRef.current?.select()
         } else {
           wholeRef.current?.focus()
           wholeRef.current?.select()
@@ -146,11 +164,13 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
     const boxHeight = Math.min(w * 0.4, h * 0.38)
     const wholeBoxSize = Math.min(w * 0.5, h * 0.7)
     const lineWidth = Math.min(w * 0.25, 25)
+    const gap = 2 // consistent small gap between elements
 
     // Calculate dynamic widths based on content length
-    const wholeBoxWidth = Math.max(wholeBoxSize, whole.length * wholeFontSize * 0.6)
+    const wholeBoxWidth = Math.max(wholeBoxSize * 0.6, whole.length * wholeFontSize * 0.6)
     const fractionMaxLen = Math.max(numerator.length, denominator.length, 1)
     const fractionBoxWidth = Math.max(boxHeight, fractionMaxLen * fontSize * 0.6)
+    const suffixBoxWidth = Math.max(boxHeight * 0.6, suffix.length * fontSize * 0.6)
 
     return (
       <HTMLContainer id={shape.id}>
@@ -163,7 +183,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
             alignItems: 'center',
             justifyContent: 'center',
             pointerEvents: isEditing ? 'all' : 'none',
-            gap: 4,
+            gap: gap,
           }}
           onPointerDown={(e) => {
             if (isEditing) {
@@ -194,7 +214,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                   outline: 'none',
                   padding: '0 4px',
                   background: 'white',
-                  minWidth: wholeBoxSize * 0.6,
+                  minWidth: wholeBoxSize * 0.5,
                 }}
               />
               {/* Fraction part */}
@@ -203,7 +223,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 2,
+                  gap: gap,
                 }}
               >
                 <input
@@ -259,6 +279,29 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                   }}
                 />
               </div>
+              {/* Suffix input */}
+              <input
+                ref={suffixRef}
+                type="text"
+                value={suffix}
+                onChange={handleSuffixChange}
+                onKeyDown={handleKeyDown}
+                placeholder=""
+                style={{
+                  width: suffixBoxWidth,
+                  height: boxHeight,
+                  textAlign: 'center',
+                  fontSize: fontSize * 0.8,
+                  fontFamily: 'system-ui, sans-serif',
+                  fontWeight: 600,
+                  border: '2px solid #999',
+                  borderRadius: 4,
+                  outline: 'none',
+                  padding: '0 4px',
+                  background: 'white',
+                  minWidth: boxHeight * 0.6,
+                }}
+              />
             </>
           ) : (
             // Display mode: show mixed number or placeholder boxes
@@ -269,7 +312,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                   {/* Whole number placeholder */}
                   <div
                     style={{
-                      width: wholeBoxSize,
+                      width: wholeBoxSize * 0.6,
                       height: wholeBoxSize,
                       border: '2px solid #999',
                       borderRadius: 4,
@@ -282,7 +325,7 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: 2,
+                      gap: gap,
                     }}
                   >
                     <div
@@ -312,63 +355,105 @@ export class MixedNumberShapeUtil extends ShapeUtil<MixedNumberShape> {
                       }}
                     />
                   </div>
+                  {/* Suffix placeholder */}
+                  <div
+                    style={{
+                      width: boxHeight * 0.6,
+                      height: boxHeight,
+                      border: '2px solid #999',
+                      borderRadius: 4,
+                      background: '#e0e0e0',
+                    }}
+                  />
                 </>
               ) : (
-                // Show the actual mixed number
+                // Show the actual mixed number with suffix
                 <svg
                   width={w}
                   height={h}
                   style={{ overflow: 'visible' }}
                 >
-                  {/* Whole number */}
-                  <text
-                    x={w * 0.25}
-                    y={h / 2}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize={wholeFontSize}
-                    fontFamily="system-ui, sans-serif"
-                    fontWeight="600"
-                    fill="#333"
-                  >
-                    {whole}
-                  </text>
-                  {/* Numerator */}
-                  <text
-                    x={w * 0.65}
-                    y={h * 0.22}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize={fontSize}
-                    fontFamily="system-ui, sans-serif"
-                    fontWeight="600"
-                    fill="#333"
-                  >
-                    {numerator}
-                  </text>
-                  {/* Fraction line */}
-                  <line
-                    x1={w * 0.65 - Math.max(lineWidth, fractionBoxWidth) / 2}
-                    y1={h / 2}
-                    x2={w * 0.65 + Math.max(lineWidth, fractionBoxWidth) / 2}
-                    y2={h / 2}
-                    stroke="#333"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                  />
-                  {/* Denominator */}
-                  <text
-                    x={w * 0.65}
-                    y={h * 0.78}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize={fontSize}
-                    fontFamily="system-ui, sans-serif"
-                    fontWeight="600"
-                    fill="#333"
-                  >
-                    {denominator}
-                  </text>
+                  {/* Calculate positions */}
+                  {(() => {
+                    const wholeTextWidth = whole.length * wholeFontSize * 0.6
+                    const fractionLineWidth = Math.max(lineWidth, fractionBoxWidth)
+                    const suffixWidth = suffix.length * fontSize * 0.6
+                    const totalWidth = wholeTextWidth + gap + fractionLineWidth + (suffix ? gap + suffixWidth : 0)
+
+                    const startX = (w - totalWidth) / 2
+                    const wholeCenterX = startX + wholeTextWidth / 2
+                    const fractionCenterX = startX + wholeTextWidth + gap + fractionLineWidth / 2
+                    const suffixX = fractionCenterX + fractionLineWidth / 2 + gap
+
+                    return (
+                      <>
+                        {/* Whole number */}
+                        <text
+                          x={wholeCenterX}
+                          y={h / 2}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fontSize={wholeFontSize}
+                          fontFamily="system-ui, sans-serif"
+                          fontWeight="600"
+                          fill="#333"
+                        >
+                          {whole}
+                        </text>
+                        {/* Numerator */}
+                        <text
+                          x={fractionCenterX}
+                          y={h * 0.22}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fontSize={fontSize}
+                          fontFamily="system-ui, sans-serif"
+                          fontWeight="600"
+                          fill="#333"
+                        >
+                          {numerator}
+                        </text>
+                        {/* Fraction line */}
+                        <line
+                          x1={fractionCenterX - fractionLineWidth / 2}
+                          y1={h / 2}
+                          x2={fractionCenterX + fractionLineWidth / 2}
+                          y2={h / 2}
+                          stroke="#333"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                        />
+                        {/* Denominator */}
+                        <text
+                          x={fractionCenterX}
+                          y={h * 0.78}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fontSize={fontSize}
+                          fontFamily="system-ui, sans-serif"
+                          fontWeight="600"
+                          fill="#333"
+                        >
+                          {denominator}
+                        </text>
+                        {/* Suffix */}
+                        {suffix && (
+                          <text
+                            x={suffixX}
+                            y={h / 2}
+                            textAnchor="start"
+                            dominantBaseline="middle"
+                            fontSize={fontSize}
+                            fontFamily="system-ui, sans-serif"
+                            fontWeight="600"
+                            fill="#333"
+                          >
+                            {suffix}
+                          </text>
+                        )}
+                      </>
+                    )
+                  })()}
                 </svg>
               )}
             </>

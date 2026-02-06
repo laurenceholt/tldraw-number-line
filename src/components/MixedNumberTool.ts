@@ -29,6 +29,7 @@ class Pointing extends StateNode {
         whole: '',
         numerator: '',
         denominator: '',
+        suffix: '',
       },
     })
 
