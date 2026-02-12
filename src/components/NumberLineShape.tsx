@@ -507,7 +507,55 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
             )}
           </svg>
 
-          {/* Settings cog button (only when selected) */}
+          {/* Partition dropdown (top left, only when selected) */}
+          {isSelected && (
+            <div
+              onPointerDown={stopEventPropagation}
+              onPointerUp={stopEventPropagation}
+              style={{
+                position: 'absolute',
+                top: 6,
+                left: 6,
+                pointerEvents: 'all',
+              }}
+            >
+              <select
+                value={partition}
+                onChange={(e) => {
+                  this.editor.updateShape<NumberLineShape>({
+                    id: shape.id,
+                    type: 'number-line',
+                    props: { partition: Number(e.target.value) },
+                  })
+                }}
+                style={{
+                  padding: '2px 4px',
+                  fontSize: 12,
+                  border: '1px solid #ddd',
+                  borderRadius: 4,
+                  background: 'rgba(255,255,255,0.9)',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+                title="Partition"
+              >
+                <option value={1}>None</option>
+                <option value={2}>1/2</option>
+                <option value={3}>1/3</option>
+                <option value={4}>1/4</option>
+                <option value={5}>1/5</option>
+                <option value={6}>1/6</option>
+                <option value={7}>1/7</option>
+                <option value={8}>1/8</option>
+                <option value={9}>1/9</option>
+                <option value={10}>1/10</option>
+                <option value={11}>1/11</option>
+                <option value={12}>1/12</option>
+              </select>
+            </div>
+          )}
+
+          {/* Settings cog button (top right, only when selected) */}
           {isSelected && (
             <div
               onPointerDown={toggleSettings}
