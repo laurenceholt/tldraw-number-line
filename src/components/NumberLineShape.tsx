@@ -225,7 +225,7 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
       })
     }
 
-    const toggleSettings = (e: React.PointerEvent) => {
+    const toggleSettings = (e: React.MouseEvent) => {
       e.stopPropagation()
       e.preventDefault()
       // Select the shape first if not already selected
@@ -570,8 +570,9 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
 
           {/* Settings cog button (top right, always visible) */}
           <div
-            onPointerDown={toggleSettings}
+            onPointerDown={stopEventPropagation}
             onPointerUp={stopEventPropagation}
+            onClick={toggleSettings}
             style={{
               position: 'absolute',
               top: 6,
