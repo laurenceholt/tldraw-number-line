@@ -91,7 +91,6 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
 
   component(shape: NumberLineShape) {
     const { w, h, startValue, endValue, partition, dots, showSettings } = shape.props
-    const isSelected = this.editor.getSelectedShapeIds().includes(shape.id)
 
     // Layout calculations
     const padding = 40
@@ -507,82 +506,90 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
             )}
           </svg>
 
-          {/* Partition dropdown (top left, only when selected) */}
-          {isSelected && (
-            <div
-              onPointerDown={stopEventPropagation}
-              onPointerUp={stopEventPropagation}
+          {/* Partition dropdown (top left, always visible) */}
+          <div
+            onPointerDown={stopEventPropagation}
+            onPointerUp={stopEventPropagation}
+            style={{
+              position: 'absolute',
+              top: 6,
+              left: 6,
+              pointerEvents: 'all',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <span
               style={{
-                position: 'absolute',
-                top: 6,
-                left: 6,
-                pointerEvents: 'all',
+                fontSize: 12,
+                color: '#666',
+                fontFamily: 'system-ui, sans-serif',
               }}
             >
-              <select
-                value={partition}
-                onChange={(e) => {
-                  this.editor.updateShape<NumberLineShape>({
-                    id: shape.id,
-                    type: 'number-line',
-                    props: { partition: Number(e.target.value) },
-                  })
-                }}
-                style={{
-                  padding: '2px 4px',
-                  fontSize: 12,
-                  border: '1px solid #ddd',
-                  borderRadius: 4,
-                  background: 'rgba(255,255,255,0.9)',
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-                title="Partition"
-              >
-                <option value={1}>None</option>
-                <option value={2}>1/2</option>
-                <option value={3}>1/3</option>
-                <option value={4}>1/4</option>
-                <option value={5}>1/5</option>
-                <option value={6}>1/6</option>
-                <option value={7}>1/7</option>
-                <option value={8}>1/8</option>
-                <option value={9}>1/9</option>
-                <option value={10}>1/10</option>
-                <option value={11}>1/11</option>
-                <option value={12}>1/12</option>
-              </select>
-            </div>
-          )}
-
-          {/* Settings cog button (top right, only when selected) */}
-          {isSelected && (
-            <div
-              onPointerDown={toggleSettings}
-              onPointerUp={stopEventPropagation}
+              Partition:
+            </span>
+            <select
+              value={partition}
+              onChange={(e) => {
+                this.editor.updateShape<NumberLineShape>({
+                  id: shape.id,
+                  type: 'number-line',
+                  props: { partition: Number(e.target.value) },
+                })
+              }}
               style={{
-                position: 'absolute',
-                top: 6,
-                right: 6,
-                width: 24,
-                height: 24,
+                padding: '2px 4px',
+                fontSize: 12,
                 border: '1px solid #ddd',
                 borderRadius: 4,
                 background: 'rgba(255,255,255,0.9)',
                 cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'all',
+                outline: 'none',
               }}
-              title="Settings"
+              title="Partition"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
-            </div>
-          )}
+              <option value={1}>None</option>
+              <option value={2}>1/2</option>
+              <option value={3}>1/3</option>
+              <option value={4}>1/4</option>
+              <option value={5}>1/5</option>
+              <option value={6}>1/6</option>
+              <option value={7}>1/7</option>
+              <option value={8}>1/8</option>
+              <option value={9}>1/9</option>
+              <option value={10}>1/10</option>
+              <option value={11}>1/11</option>
+              <option value={12}>1/12</option>
+            </select>
+          </div>
+
+          {/* Settings cog button (top right, always visible) */}
+          <div
+            onPointerDown={toggleSettings}
+            onPointerUp={stopEventPropagation}
+            style={{
+              position: 'absolute',
+              top: 6,
+              right: 6,
+              width: 24,
+              height: 24,
+              border: '1px solid #ddd',
+              borderRadius: 4,
+              background: 'rgba(255,255,255,0.9)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'all',
+            }}
+            title="Settings"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </div>
         </div>
       </HTMLContainer>
     )
