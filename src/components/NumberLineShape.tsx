@@ -228,6 +228,10 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
     const toggleSettings = (e: React.PointerEvent) => {
       e.stopPropagation()
       e.preventDefault()
+      // Select the shape first if not already selected
+      if (!this.editor.getSelectedShapeIds().includes(shape.id)) {
+        this.editor.select(shape.id)
+      }
       this.editor.updateShape<NumberLineShape>({
         id: shape.id,
         type: 'number-line',
@@ -574,9 +578,6 @@ export class NumberLineShapeUtil extends ShapeUtil<NumberLineShape> {
               right: 6,
               width: 24,
               height: 24,
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              background: 'rgba(255,255,255,0.9)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
